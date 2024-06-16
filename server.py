@@ -1,4 +1,6 @@
-import torch 
+import json
+
+import torch
 import os
 import socket
 import cv2
@@ -50,13 +52,17 @@ class ServerSocket:
                 for result in results:
                     cls = result.boxes.cls
                     if(cls == 0):
-                        print("Eating person")
+                        value = {"r":255, "g":0, "b":0, "lx":50}
                     elif(cls == 1):
-                        print("Sleeping person")
+                        value = {"r": 0, "g": 255, "b": 0, "lx": 50}
                     elif(cls == 2):
-                        print("Studying person")
+                        value = {"r": 0, "g": 0, "b": 255, "lx": 50}
                     else:
-                        print("No Class")
+                        print("No class")
+                    json_data = json.dumps(value)
+                    self.sock.connect("192.168.0.203", 2018)
+                    self.sock.send(json_data.encode())
+                    print("Complete sending")
         except Exception as e:
             print(e)
             self.socketClose()
