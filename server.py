@@ -97,7 +97,7 @@ class Socket:
 # 2. Call method receiveImages() and predict image through model
 # 3. Based on the predicted result, producing output
 # 4. Create new thread and Send the result to Raspberry pi
-def receive_jetson(self):
+def receive_jetson():
     server = Socket(SERVER_IP, SERVER_PORT)
     server.receiveImages()
 
@@ -106,7 +106,7 @@ def receive_jetson(self):
 
 # 1. Create Socket and Connect to client (Raspberry pi)
 # 2. Encode data JSON and send the result Raspberry pi
-def send_socket(self, data):
+def send_socket(data):
     server = Socket(RAS_IP, RAS_PORT)
     server.send_ras(data)
 
