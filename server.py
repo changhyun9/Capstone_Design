@@ -19,15 +19,12 @@ clients = []
 SERVER_IP = '10.43.24.186'
 SERVER_PORT = 8080
 
-# RAS_IP = '192.168.0.203'
-# RAS_PORT = 2018
-
 class Socket:
 
     def __init__(self, ip, port):
         self.TCP_IP = ip
         self.TCP_PORT = port
-        self.sock - None
+        self.sock = None
         self.socketOpen()
 
     def socketClose(self):
@@ -56,14 +53,13 @@ def receiveImages(conn):
             results = model.predict("./saved_image.jpg", show=False)
 
             for result in results:
-                cls = int(result.boxes.cls[0])
-                # cls = result.boxes.cls
+                cls = result.boxes.cls
                 if (cls == 0):
-                    value = {"r": 255, "g": 0, "b": 0, "lx": 50}
+                    value = {"r": 255, "g": 255, "b": 0, "lx": 50, "cls" : "Eating person"}
                 elif (cls == 1):
-                    value = {"r": 0, "g": 255, "b": 0, "lx": 50}
+                    value = {"r": 204, "g": 0, "b": 0, "lx": 50, "cls" : "Sleeping person"}
                 elif (cls == 2):
-                    value = {"r": 0, "g": 0, "b": 255, "lx": 50}
+                    value = {"r": 51, "g": 0, "b": 255, "lx": 50, "cls" : "Studying person"}
                 else:
                     print("No class")
                     continue
@@ -77,6 +73,7 @@ def receiveImages(conn):
         print(e)
     finally:
         clients.remove(conn)
+        print("!!!!")
         conn.close()
 
 def recvall(sock, count):
@@ -92,6 +89,7 @@ def recvall(sock, count):
 def send_socket(data, sender_conn):
     for client in clients:
         if client != sender_conn:
+            print("Send to Raspberry")
             client.send(data.encode())
 
 
@@ -102,14 +100,12 @@ def send_socket(data, sender_conn):
 def receive_jetson():
     server = Socket(SERVER_IP, SERVER_PORT)
     try:
-        # if occurs error here, update code in notion
         while True:
             conn, addr = server.sock.accept()
             print(f'Server socket is connected with {addr}')
             clients.append(conn)
-            thread = threading.Thread(target=receiveImages, args=(conn))
+            thread = threading.Thread(target=receiveImages, args=(conn,))
             thread.start()
-            # receiveImages(conn, server)
     except Exception as e:
         print(e)
     finally:
