@@ -32,7 +32,7 @@ class Socket:
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is close')
 
     def socketOpen(self):
-        self.sock  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.sock.bind((self.TCP_IP, self.TCP_PORT))
         self.sock.listen()
@@ -55,11 +55,11 @@ def receiveImages(conn):
             for result in results:
                 cls = result.boxes.cls
                 if (cls == 0):
-                    value = {"r": 255, "g": 255, "b": 0, "lx": 50, "cls" : "Eating person"}
+                    value = {"r": 255, "g": 255, "b": 0, "lx": 50, "cls": "Eating person"}
                 elif (cls == 1):
-                    value = {"r": 204, "g": 0, "b": 0, "lx": 50, "cls" : "Sleeping person"}
+                    value = {"r": 204, "g": 0, "b": 0, "lx": 50, "cls": "Sleeping person"}
                 elif (cls == 2):
-                    value = {"r": 51, "g": 0, "b": 255, "lx": 50, "cls" : "Studying person"}
+                    value = {"r": 51, "g": 0, "b": 255, "lx": 50, "cls": "Studying person"}
                 else:
                     print("No class")
                     continue
@@ -73,7 +73,6 @@ def receiveImages(conn):
         print(e)
     finally:
         clients.remove(conn)
-        print("!!!!")
         conn.close()
 
 def recvall(sock, count):
@@ -89,7 +88,7 @@ def recvall(sock, count):
 def send_socket(data, sender_conn):
     for client in clients:
         if client != sender_conn:
-            print("Send to Raspberry")
+            print("Send results to Raspberry")
             client.send(data.encode())
 
 
