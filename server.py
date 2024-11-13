@@ -11,12 +11,18 @@ import time
 import threading
 from datetime import datetime
 from ultralytics import YOLO
+from cyclegan_turbo import CycleGAN_Turbo
+
+#Load CycleGAN to memory 
+cyclegan_model = CycleGAN_Turbo(pretrained_name="night_to_day")
+cyclegan_model.eval()  # 평가 모드 설정
+cyclegan_model.unet.enable_xformers_memory_efficient_attention()
 
 model = YOLO('./best.pt')
 
 clients = []
 
-SERVER_IP = '10.43.24.186'
+SERVER_IP = '120.142.98.141'
 SERVER_PORT = 8080
 
 class Socket:
@@ -39,6 +45,11 @@ class Socket:
         print(u'Server socket [ TCP_IP: ' + self.TCP_IP + ', TCP_PORT: ' + str(self.TCP_PORT) + ' ] is open')
 
 
+def is_low_light(image, threshold=50):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    mean_brightness = gray.mean()
+    return mean_brightness < threshold
+
 def receiveImages(conn):
     try:
         while True:
@@ -49,6 +60,13 @@ def receiveImages(conn):
             data = numpy.frombuffer(base64.b64decode(stringData), numpy.uint8)
             decimg = cv2.imdecode(data, 1)
             cv2.imwrite("saved_image.jpg", decimg)
+            
+            if is_low_light("saved_image.jpg", 50):
+            	#CycleGan code
+            	print("Low light detected. Enhancing brightness with CycleGAN.")
+
+                # CycleGAN 변환
+                decimg = enhance_brightness_with_cyclegan(decimg)
 
             results = model.predict("./saved_image.jpg", show=False)
 
@@ -109,7 +127,23 @@ def receive_jetson():
         print(e)
     finally:
         server.socketClose()
+        
+def enhance_brightness_with_cyclegan(image):
+    # 이미지 전처리
+    transform = transforms.Compose([
+        transforms.Resize((512, 512)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5], [0.5])
+    ])
+    input_img = transform(image).unsqueeze(0).cuda()
 
+    # CycleGAN 모델을 사용해 밝기 변환
+    with torch.no_grad():
+        output = cyclegan_model(input_img)
+        output_img = output[0].cpu() * 0.5 + 0.5
+        output_img = transforms.ToPILImage()(output_img).resize((image.shape[1], image.shape[0]))
+
+    return numpy.array(output_img)
 
 
 # plan to develop in second semester
