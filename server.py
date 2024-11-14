@@ -22,7 +22,7 @@ model = YOLO('./best.pt')
 
 clients = []
 
-SERVER_IP = '120.142.98.141'
+SERVER_IP = '175.45.194.40'
 SERVER_PORT = 8080
 
 class Socket:
@@ -74,9 +74,9 @@ def receiveImages(conn):
                 cls = result.boxes.cls
                 if (cls == 0):
                     value = {"r": 255, "g": 255, "b": 0, "lx": 50, "cls": "Eating person"}
-                elif (cls == 1):
-                    value = {"r": 204, "g": 0, "b": 0, "lx": 50, "cls": "Sleeping person"}
                 elif (cls == 2):
+                    value = {"r": 204, "g": 0, "b": 0, "lx": 50, "cls": "Sleeping person"}
+                elif (cls == 3):
                     value = {"r": 51, "g": 0, "b": 255, "lx": 50, "cls": "Studying person"}
                 else:
                     print("No class")
